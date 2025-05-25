@@ -45,10 +45,17 @@ struct AddTransactionView: View {
                 .pickerStyle(.segmented)
             }
             
-            Button("Add Transaction") {
+            Button {
                 viewModel.addTransaction(context)
+            } label: {
+                Text("Add Transaction")
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
             }
-            .frame(maxWidth: .infinity, alignment: .center)
         }
         .navigationTitle("Add Transaction")
         .overlay(
