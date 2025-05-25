@@ -12,9 +12,10 @@ struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
 
     @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Item.timestamp, ascending: true)],
-        animation: .default)
-    private var items: FetchedResults<Item>
+        sortDescriptors: [NSSortDescriptor(keyPath: \Transaction.timestamp, ascending: true)],
+        animation: .default
+)
+    private var items: FetchedResults<Transaction>
 
     var body: some View {
         NavigationView {
@@ -44,7 +45,7 @@ struct ContentView: View {
 
     private func addItem() {
         withAnimation {
-            let newItem = Item(context: viewContext)
+            let newItem = Transaction(context: viewContext)
             newItem.timestamp = Date()
 
             do {
