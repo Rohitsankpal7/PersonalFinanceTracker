@@ -26,7 +26,7 @@ class TransactionViewModel: ObservableObject {
     
     func isValidInput() -> Bool {
         guard let amountValue = Double(amount), amountValue > 0 else {
-            showToast(message: "Invalid input. Please check amount & description.")
+            showToast(message: "Invalid input. Please check amount.")
             return false
         }
         return true
