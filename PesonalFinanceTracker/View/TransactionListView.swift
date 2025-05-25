@@ -12,7 +12,7 @@ struct TransactionListView: View {
     @Environment(\.managedObjectContext) private var viewContext
 
     @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Transaction.timestamp, ascending: true)],
+        sortDescriptors: [NSSortDescriptor(keyPath: \Transaction.date, ascending: false)],
         animation: .default
 )
     private var transactions: FetchedResults<Transaction>
