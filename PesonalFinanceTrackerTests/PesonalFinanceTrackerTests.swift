@@ -5,15 +5,92 @@
 //  Created by Rohit Sankpal on 25/05/25.
 //
 
+import CoreData
 import XCTest
 @testable import PesonalFinanceTracker
 
 final class PesonalFinanceTrackerTests: XCTestCase {
 
+    var viewModel: TransactionViewModel!
+    var context: NSManagedObjectContext!
+    
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+        super.setUp()
+        
+        let container = NSPersistentContainer(name: "PesonalFinanceTracker")
+        let description = NSPersistentStoreDescription()
+        description.type = NSInMemoryStoreType
+        container.persistentStoreDescriptions = [description]
+        
+        container.loadPersistentStores { (_, error) in
+            XCTAssertNil(error)
+        }
+        
+        context = container.viewContext
+        viewModel = TransactionViewModel()
     }
 
+    func testInvalidAmountShouldShowToast() {
+        viewModel.amount = "-10"
+        viewModel.category = "Food"
+        viewModel.date = Date()
+        viewModel.desc = "Test"
+        
+        viewModel.addTransaction(context)
+        
+        XCTAssertTrue(viewModel.showToast)
+        XCTAssertEqual(viewModel.toastMessage, "Invalid input. Please check amount.")
+    }
+    
+    func testMissingCategory_ShouldShowToast() {
+        viewModel.amount = "100"
+        viewModel.desc = "Bus ticket"
+        viewModel.category = ""  // Missing
+        viewModel.type = "Expense"
+
+        viewModel.addTransaction(context)
+
+        XCTAssertTrue(viewModel.showToast)
+        XCTAssertEqual(viewModel.toastMessage, "Please select category.")
+    }
+    
+    func testValidTransaction_ShouldShow_Success_Toast() {
+        viewModel.amount = "100"
+        viewModel.desc = "Bus ticket"
+        viewModel.category = "Transport"
+        viewModel.type = "Expense"
+        
+        viewModel.addTransaction(context)
+        
+        XCTAssertTrue(viewModel.showToast)
+        XCTAssertEqual(viewModel.toastMessage, "Transaction added successfully!")
+        
+        let fetchRequest: NSFetchRequest<Transaction> = Transaction.fetchRequest()
+        let results = try! context.fetch(fetchRequest)
+        XCTAssertEqual(results.count, 1)
+        XCTAssert(results[0].amount == 100)
+        XCTAssert(results[0].category == "Transport")
+    }
+    
+    func testClearInputs_ShouldResetFields() {
+        viewModel.amount = "99"
+        viewModel.desc = "Something"
+        viewModel.category = "Other"
+        viewModel.type = "Income"
+        viewModel.date = Date(timeIntervalSince1970: 0)
+        
+        viewModel.clearInputs()
+        
+        XCTAssertEqual(viewModel.amount, "")
+        XCTAssertEqual(viewModel.desc, "")
+    }
+    
+    override func tearDown() {
+        viewModel = nil
+        context = nil
+        super.tearDown()
+    }
+    
     override func tearDownWithError() throws {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
