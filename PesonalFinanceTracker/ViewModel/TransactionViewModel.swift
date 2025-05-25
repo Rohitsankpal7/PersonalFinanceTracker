@@ -17,20 +17,39 @@ class TransactionViewModel: ObservableObject {
     @Published var desc: String = ""
     @Published var type: String = "" // Income/Expense
     
+    @Published var showToast: Bool = false
+    @Published var toastMessage: String = ""
+    
     // drop down properties
     let categoryOptions = ["Food", "Transport", "Entertainment", "Salary", "Other"]
     let typeOptions = ["Income", "Expense"]
     
+    func isValidInput() -> Bool {
+        guard let amountValue = Double(amount), amountValue > 0 else {
+            showToast(message: "Invalid input. Please check amount & description.")
+            return false
+        }
+        return true
+    }
+    
+    private var toastTimer: Timer?
+    
     // MARK:- Add New Transaction
     func addTransaction(_ context: NSManagedObjectContext) {
-        guard let amountValue = Double(amount), amountValue > 0 else {
+        guard isValidInput() else {
             print("Invalid amount")
+            return
+        }
+        
+        guard !category.isEmpty else {
+            toastMessage = "Please select category."
+            showToast = true
             return
         }
         
         let transaction = Transaction(context: context)
         transaction.id = UUID()
-        transaction.amount = amountValue
+        transaction.amount = Double(amount) ?? 0
         transaction.category = category
         transaction.desc = desc
         transaction.date = date
@@ -39,10 +58,27 @@ class TransactionViewModel: ObservableObject {
         do {
             try context.save()
             clearInputs()
+            showToast(message: "Transaction added successfully!")
         } catch {
+            showToast(message: "Failed to save transaction.")
             print("Failed to save transaction: \(error.localizedDescription)")
         }
     }
+    
+    private func showToast(message: String) {
+        toastMessage = message
+        showToast = true
+        
+        // Cancel previous timer if any
+        toastTimer?.invalidate()
+        
+        toastTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: false) { _ in
+            DispatchQueue.main.async {
+                self.showToast = false
+            }
+        }
+    }
+
     
     // MARK: - Clear Input Fields
     func clearInputs() {

@@ -13,7 +13,7 @@ struct PesonalFinanceTrackerApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            TransactionListView()
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
     }
